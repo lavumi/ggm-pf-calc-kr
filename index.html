@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<!-- saved from url=(0038)https://maifen-zhifeiji.nextzhou.site/ -->
+<html lang="ko">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>종이비행기 포인트 계산기</title>
+    <style>
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            margin-right: 10px;
+        }
+        .form-group input,
+        .form-group select {
+            margin-right: 10px;
+        }
+        .collapsible {
+            cursor: pointer;
+        }
+        .collapsed {
+            display: none;
+        }
+        .keypoint {
+            color: black;
+            text-decoration: underline;
+            text-decoration-color: red;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted black;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 160px;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 150%;
+            left: 50%;
+            margin-left: -60px;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: black transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+        }
+
+        .max-width-img {
+            width: 100%; 
+            max-width: 400px; 
+        }
+    </style>
+    <link rel="stylesheet" href="./files/all.min.css">
+    <link rel="stylesheet" href="./files/bulma.min.css">
+    <script src="./files/hm.js.download"></script>
+    <script>
+        var Product = /** @class */ (function () {
+            function Product(name, points, dailyQuantity, purchase) {
+                if (dailyQuantity === void 0) { dailyQuantity = 0; }
+                this.name = name;
+                this.points = points;
+                this.purchase = purchase;
+                this.dailyQuantity = dailyQuantity;
+            }
+            Product.prototype.generateSelectOptions = function (selected) {
+                if (selected === void 0) { selected = -1; }
+                if (this.purchase) {
+                    return this.purchase.generateSelectOptions(this.points, selected);
+                }
+                else {
+                    return '';
+                }
+            };
+            Product.prototype.calculatePoints = function (quantity) {
+                var points = new Points(this.name, quantity);
+                points.points = Math.floor(this.points * quantity);
+                points.cost = 0;
+                points.updateExplain();
+                return points;
+            };
+            return Product;
+        }());
+        var Purchase = /** @class */ (function () {
+            function Purchase(quantity, costs) {
+                this.quantity = quantity;
+                this.costs = costs;
+            }
+            Purchase.prototype.generateSelectOptions = function (points, selected) {
+    if (selected === void 0) { selected = -1; }
+    var options = '<option value="0">구매하지 않음</option>';
+    for (var i = 1; i < this.costs.length; i++) {
+        var cost = this.costs[i];
+        var thisCost = cost - this.costs[i - 1];
+        var thisCostStr = "".concat(thisCost, " 별");
+        if (thisCost == 0) {
+            thisCostStr = "무료";
+        }
+        if (points == 0) {
+            if (i == selected) {
+                options += "<option value=\"".concat(i, "\" selected>").concat(i, "회, ").concat(thisCostStr, "</option>");
+            }
+            else {
+                options += "<option value=\"".concat(i, "\">").concat(i, "회, ").concat(thisCostStr, "</option>");
+            }
+            continue;
+        }
+        var costPerPoint = thisCost / (this.quantity * points);
+        var discountStr = "";
+        if (costPerPoint < 10) {
+            discountStr = costPerPoint.toLocaleString('en-US', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 1
+            });
+            discountStr = "0.".concat(discountStr, "배");
+        }
+        else if (costPerPoint == 10) {
+            discountStr = "원가";
+        }
+        else {
+            discountStr = (costPerPoint / 10).toLocaleString('en-US', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 1
+            });
+            discountStr = "".concat(discountStr, "배");
+        }
+        if (i == selected) {
+            options += "<option value=\"".concat(i, "\" selected>제").concat(i, "회, ").concat(thisCostStr, ", ").concat(discountStr, "</option>");
+        }
+        else {
+            options += "<option value=\"".concat(i, "\">제").concat(i, "회, ").concat(thisCostStr, ", ").concat(discountStr, "</option>");
+        }
+    }
+    return options;
+};
+ return Purchase;
+        }());
+        var ProductRune = new Product("룬 텍스트", 0.1, 480, new Purchase(100, [
+            0, 20, 50, 100, 180, 280, 380, 480, 630, 780, 930, 1080, 1280, 1480, 1680, 1880
+        ]));
+        var ProductEnergyCrystal = new Product("에너지 크리스탈", 3);
+        var SkillCard = new Product("스킬 추첨", 10);
+        var PedCard = new Product("펫 추첨", 15);
+        var ProductEnergy = new Product("비밀 보물 에너지", 0.3, 240, new Purchase(50, [
+            0, 30, 80, 160, 280, 430, 580, 730, 950, 1170, 1390, 1610, 1910, 2210, 2510, 2810
+        ]));
+        var ProductRiding = new Product("탈것 티켓", 2, 25, new Purchase(5, [
+            0, 30, 60, 110, 190, 310, 460, 660, 910, 1210
+        ]));
+        var ProductPack1 = new Product("선택 패키지 1", 150, 0, new Purchase(1, [
+            0, 1000
+        ]));
+        var ProductPack2 = new Product("선택 패키지 2", 225, 0, new Purchase(1, [
+            0, 1800
+        ]));
+        var ProductWater = new Product("길드 물 주기", 0, 0, new Purchase(1, [
+            0, 0, 20, 70, 170, 270
+        ]));
+        var ProductInstance = new Product("비밀 던전/인스턴스 체력", 0, 0, new Purchase(1, [
+            0, 20, 40, 60,
+        ]));
+        var ProductCat = new Product("냥이빵 장작", 0, 0, new Purchase(1, [
+            0, 30, 80, 160, 280, 430, 630, 880, 1180, 1480
+        ]));
+        var LevelGiftPoints = /** @class */ (function () {
+            function LevelGiftPoints(pointLevel, points) {
+                this.pointLevel = pointLevel;
+                this.points = points;
+            }
+            return LevelGiftPoints;
+        }());
+        var Resources = /** @class */ (function () {
+            function Resources(days, currentPoints, diamond, dailyCost, energy, energyPurchaseTimes, energyCrystal, rune, runePurchaseTimes, riding, ridingPurchaseTimes, skillCard, pedCard, pack1, pack2, subscriptionCard, water, cat, instance, nightmareDiamond) {
+                this.days = days;
+                this.currentPoints = currentPoints;
+                this.diamond = diamond;
+                this.dailyCost = dailyCost;
+                this.energy = energy;
+                this.energyPurchaseTimes = energyPurchaseTimes;
+                this.energyCrystal = energyCrystal;
+                this.rune = rune;
+                this.runePurchaseTimes = runePurchaseTimes;
+                this.riding = riding;
+                this.ridingPurchaseTimes = ridingPurchaseTimes;
+                this.skillCard = skillCard;
+                this.pedCard = pedCard;
+                if (pack1) {
+                    this.pack1 = Math.floor(days / 7);
+                }
+                else {
+                    this.pack1 = 0;
+                }
+                if (pack2) {
+                    this.pack2 = Math.floor(days / 7);
+                }
+                else {
+                    this.pack2 = 0;
+                }
+                if (subscriptionCard) {
+                    this.subscriptionCard = 100;
+                }
+                else {
+                    this.subscriptionCard = 0;
+                }
+                this.water = water;
+                this.cat = cat;
+                this.instance = instance;
+                this.nightmareDiamond = nightmareDiamond;
+            }
+            Resources.prototype.calculate = function (levelPoints) {
+                var result = new Result();
+                var newline = new Points("개행");
+                newline.explain = "";
+                if (this.currentPoints > 0) {
+                    if (this.days >= 7) {
+                        var error = new Points("오류", 0, 0);
+                        error.explain = "입력한 날짜 ".concat(this.days, " >= 7일, 이는 종이비행기 활동이 아직 시작되지 않았음을 의미합니다. 따라서 '현재 보유 포인트'는 0이어야 합니다.");
+                        result.points.push(error);
+                        var error2 = new Points("오류", 0, 0);
+                        error2.explain = "데이터를 확인한 후 다시 입력하고 계산하세요.";
+                        result.points.push(error2);
+                        return result;
+                    }
+                    var currentPoints = new Points("현재 포인트", 0, this.currentPoints);
+                    currentPoints.explain = "현재 ".concat(this.currentPoints, " 포인트 보유");
+                    result.points.push(currentPoints);
+                }
+                if (this.days > 0) {
+                    var zfjDays = Math.min(7, this.days); // 활동 일수
+                    var dailyPoints = new Points("일일 임무 포인트", 0);
+                    dailyPoints.points = 100 * zfjDays;
+                    dailyPoints.explain = "매일 임무 100 포인트 * ".concat(zfjDays, "일, 총 ").concat(dailyPoints.points, " 포인트");
+                    result.points.push(dailyPoints);
+                    if (this.pack1 > 0) {
+                        var pack1Points = ProductPack1.calculatePoints(this.pack1);
+                        pack1Points.cost = ProductPack1.purchase.costs[1] * this.pack1;
+                        pack1Points.updateExplain();
+                        result.points.push(pack1Points);
+                    }
+                    if (this.pack2 > 0) {
+                        var pack2Points = ProductPack2.calculatePoints(this.pack2);
+                        pack2Points.cost = ProductPack2.purchase.costs[1] * this.pack2;
+                        pack2Points.updateExplain();
+                        result.points.push(pack2Points);
+                    }
+                    var freeEnergyQuantity = zfjDays * ProductEnergy.dailyQuantity;
+                    if (this.energyPurchaseTimes > 0) {
+                        var purchaseEnergyQuantity = this.energyPurchaseTimes * zfjDays * ProductEnergy.purchase.quantity;
+                        var purchaseEnergyPoints = ProductEnergy.calculatePoints(purchaseEnergyQuantity + freeEnergyQuantity);
+                        purchaseEnergyPoints.cost = ProductEnergy.purchase.costs[this.energyPurchaseTimes] * zfjDays;
+                        purchaseEnergyPoints.explain = "매일 ".concat(purchaseEnergyPoints.name, " (무료 ").concat(ProductEnergy.dailyQuantity, "개 + 구매 ").concat(ProductEnergy.purchase.quantity, "개 * ").concat(this.energyPurchaseTimes, "회) * ").concat(zfjDays, "일");
+                        purchaseEnergyPoints.explain += ", ".concat(purchaseEnergyQuantity + freeEnergyQuantity, " 에너지, 총 ").concat(purchaseEnergyPoints.points, " 포인트");
+                        purchaseEnergyPoints.explain += ", 비용 ".concat(purchaseEnergyPoints.cost, " 별");
+                        result.points.push(purchaseEnergyPoints);
+                    }
+                    else {
+                        var freeEnergyPoints = ProductEnergy.calculatePoints(freeEnergyQuantity);
+                        freeEnergyPoints.explain = "매일 ".concat(freeEnergyPoints.name, " 무료 ").concat(ProductEnergy.dailyQuantity, "개 * ").concat(zfjDays, "일, 총 ").concat(freeEnergyQuantity, "개, ").concat(freeEnergyPoints.points, " 포인트");
+                        result.points.push(freeEnergyPoints);
+                    }
+                    var tips = "";
+                    if (this.days > 7) {
+                        tips = "(활동 시작 시점에 저장 후 사용)";
+                    }
+                    var freeRuneQuantity = this.days * ProductRune.dailyQuantity;
+                    if (this.runePurchaseTimes > 0) {
+                        var purchaseRuneQuantity = this.runePurchaseTimes * this.days * ProductRune.purchase.quantity;
+                        var purchaseRunePoints = ProductRune.calculatePoints(purchaseRuneQuantity + freeRuneQuantity);
+                        purchaseRunePoints.cost = ProductRune.purchase.costs[this.runePurchaseTimes] * this.days;
+                        purchaseRunePoints.explain = "매일 ".concat(purchaseRunePoints.name, " (무료 ").concat(ProductRune.dailyQuantity, "개 + 구매 ").concat(ProductRune.purchase.quantity, "개 * ").concat(this.runePurchaseTimes, "회) * ").concat(this.days, "일").concat(tips);
+                        purchaseRunePoints.explain += ", ".concat(purchaseRuneQuantity + freeRuneQuantity, " 룬 텍스트, 총 ").concat(purchaseRunePoints.points, " 포인트");
+                        purchaseRunePoints.explain += ", 비용 ".concat(purchaseRunePoints.cost, " 별");
+                        result.points.push(purchaseRunePoints);
+                    }
+                    else {
+                        var freeRunePoints = ProductRune.calculatePoints(freeRuneQuantity);
+                        freeRunePoints.explain = "매일 ".concat(freeRunePoints.name, " 무료 ").concat(ProductRune.dailyQuantity, "개 * ").concat(this.days, "일").concat(tips, ", 총 ").concat(freeRuneQuantity, "개, ").concat(freeRunePoints.points, " 포인트");
+                        result.points.push(freeRunePoints);
+                    }
+                    var freeRidingQuantity = this.days * ProductRiding.dailyQuantity;
+                    if (this.ridingPurchaseTimes > 0) {
+                        var purchaseRidingQuantity = this.ridingPurchaseTimes * this.days * ProductRiding.purchase.quantity;
+                        var purchaseRidingPoints = ProductRiding.calculatePoints(purchaseRidingQuantity + freeRidingQuantity);
+                        purchaseRidingPoints.cost = ProductRiding.purchase.costs[this.ridingPurchaseTimes] * this.days;
+                        purchaseRidingPoints.explain = "매일 ".concat(purchaseRidingPoints.name, " (무료 ").concat(ProductRiding.dailyQuantity, "개 + 구매 ").concat(ProductRiding.purchase.quantity, "장 * ").concat(this.ridingPurchaseTimes, "회) * ").concat(this.days, "일").concat(tips);
+                        purchaseRidingPoints.explain += ", ".concat(purchaseRidingQuantity + freeRidingQuantity, " 탈것 티켓, 총 ").concat(purchaseRidingPoints.points, " 포인트");
+                        purchaseRidingPoints.explain += ", 비용 ".concat(purchaseRidingPoints.cost, " 별");
+                        result.points.push(purchaseRidingPoints);
+                    }
+                    else {
+                        var freeRidingPoints = ProductRiding.calculatePoints(freeRidingQuantity);
+                        freeRidingPoints.explain = "매일 ".concat(freeRidingPoints.name, " 무료 ").concat(ProductRiding.dailyQuantity, "개 * ").concat(this.days, "일").concat(tips, ", 총 ").concat(freeRidingQuantity, "장, ").concat(freeRidingPoints.points, " 포인트");
+                        result.points.push(freeRidingPoints);
+                    }
+                    if (this.water > 0) {
+                        var waterPoints = new Points("길드 물 주기", 0);
+                        waterPoints.cost = ProductWater.purchase.costs[this.water] * this.days;
+                        waterPoints.explain = "매일 길드 물 주기 ".concat(this.water, "회 * ").concat(this.days, "일, 비용 ").concat(waterPoints.cost, " 별");
+                        result.points.push(waterPoints);
+                    }
+                    if (this.instance > 0) {
+                        var instancePoints = new Points("비밀 던전/인스턴스 체력", 0);
+                        instancePoints.cost = ProductInstance.purchase.costs[this.instance] * this.days;
+                        instancePoints.explain = "매일 비밀 던전/인스턴스 체력 구매 ".concat(this.instance, "회 * ").concat(this.days, "일, 비용 ").concat(instancePoints.cost, " 별");
+                        result.points.push(instancePoints);
+                    }
+                    if (this.cat > 0) {
+                        var catPoints = new Points("냥이빵 장작", 0);
+                        catPoints.cost = ProductCat.purchase.costs[this.cat] * this.days;
+                        catPoints.explain = "냥이빵 장작 ".concat(this.cat, "회 * ").concat(this.days, "일, 비용 ").concat(catPoints.cost, " 별");
+                        result.points.push(catPoints);
+                    }
+                    if (this.dailyCost !== 0) {
+                        var dailyCostPoints = new Points("일일 지출", 0);
+                        dailyCostPoints.cost = this.dailyCost * this.days;
+                        dailyCostPoints.explain = "매일 지출 ".concat(this.dailyCost, " 별 * ").concat(this.days, "일, 비용 ").concat(dailyCostPoints.cost, " 별");
+                        result.points.push(dailyCostPoints);
+                    }
+                }
+                if (this.skillCard > 0) {
+                    result.points.push(SkillCard.calculatePoints(this.skillCard));
+                }
+                if (this.pedCard > 0) {
+                    result.points.push(PedCard.calculatePoints(this.pedCard));
+                }
+                if (this.rune > 0) {
+                    result.points.push(ProductRune.calculatePoints(this.rune));
+                }
+                if (this.riding > 0) {
+                    result.points.push(ProductRiding.calculatePoints(this.riding));
+                }
+                if (this.energy > 0) {
+                    result.points.push(ProductEnergy.calculatePoints(this.energy));
+                }
+                if (this.energyCrystal > 0) {
+                    result.points.push(ProductEnergyCrystal.calculatePoints(this.energyCrystal));
+                }
+                // 모험 수첩 일일 임무 및 주간 임무 자원
+                var weeks = Math.floor(this.days / 7);
+                if (weeks > 0) {
+                    result.points.push(newline);
+                    var weekTips = new Points("주간 임무 팁", 0);
+                    weekTips.explain = "주간 임무는 이번 주 수익을 포함하지 않으며 실제 수익은 더 많을 수 있습니다.";
+                    result.points.push(weekTips);
+                    if (this.nightmareDiamond > 0) {
+                        var nightmareDiamond = new Points("주간 악몽 격류 임무 스타다이아", 0);
+                        nightmareDiamond.cost = -this.nightmareDiamond * weeks;
+                        nightmareDiamond.explain = "매주 악몽 격류 임무 스타다이아 ".concat(this.nightmareDiamond, " 별 * ").concat(weeks, "주, 총 획득 ").concat(-nightmareDiamond.cost, " 별");
+                        result.points.push(nightmareDiamond);
+                    }
+                    var guildPet = new Points("주간 길드 서비스 구역 펫 추첨", 0);
+                    guildPet.points = PedCard.points * 2 * weeks;
+                    guildPet.explain = "매주 길드 서비스 구역 펫 추첨 최소 2장 * ".concat(weeks, "주, 총 ").concat(guildPet.points, " 포인트");
+                    result.points.push(guildPet);
+                    var instanceStoreSkillCard = new Points("주간 비밀 던전 상점 스킬 추첨", 0);
+                    instanceStoreSkillCard.points = SkillCard.points * 3 * weeks;
+                    instanceStoreSkillCard.explain = "매주 비밀 던전 상점 스킬 추첨 3장 * ".concat(weeks, "주, 총 ").concat(instanceStoreSkillCard.points, " 포인트");
+                    result.points.push(instanceStoreSkillCard);
+                    var instanceStoreDiamond = new Points("주간 비밀 던전 상점 스타다이아", 0);
+                    instanceStoreDiamond.cost = -1000 * weeks;
+                    instanceStoreDiamond.explain = "매주 비밀 던전 상점 스타다이아 1000 별 * ".concat(weeks, "주, 총 획득 ").concat(-instanceStoreDiamond.cost, " 별");
+                    result.points.push(instanceStoreDiamond);
+                    var handbookWeekDiamond = new Points("모험 수첩 주간 임무 스타다이아", 0);
+                    handbookWeekDiamond.cost = -300 * weeks;
+                    handbookWeekDiamond.explain = "모험 수첩 매주 임무 스타다이아 300 별 * ".concat(weeks, "주, 총 획득 ").concat(-handbookWeekDiamond.cost, " 별");
+                    result.points.push(handbookWeekDiamond);
+                    var handbookWeekSkillCard = new Points("모험 수첩 주간 임무 스킬 추첨", 3 * weeks);
+                    handbookWeekSkillCard.points = SkillCard.points * handbookWeekSkillCard.quantity;
+                    handbookWeekSkillCard.explain = "모험 수첩 매주 임무 스킬 추첨 3장 * ".concat(weeks, "주, 총 ").concat(handbookWeekSkillCard.quantity, "장, ").concat(handbookWeekSkillCard.points, " 포인트");
+                    result.points.push(handbookWeekSkillCard);
+                    var handbookWeekEnergyCrystal = new Points("모험 수첩 주간 임무 에너지 크리스탈", 15 * weeks);
+                    handbookWeekEnergyCrystal.points = ProductEnergyCrystal.points * handbookWeekEnergyCrystal.quantity;
+                    handbookWeekEnergyCrystal.explain = "모험 수첩 매주 임무 에너지 크리스탈 15개 * ".concat(weeks, "주, 총 ").concat(handbookWeekEnergyCrystal.quantity, "개, ").concat(handbookWeekEnergyCrystal.points, " 포인트");
+                    result.points.push(handbookWeekEnergyCrystal);
+                    var handbookWeekRiding = new Points("모험 수첩 주간 임무 탈것 티켓", 30 * weeks);
+                    handbookWeekRiding.points = ProductRiding.points * handbookWeekRiding.quantity;
+                    handbookWeekRiding.explain = "모험 수첩 매주 임무 탈것 티켓 30장 * ".concat(weeks, "주, 총 ").concat(handbookWeekRiding.quantity, "장, ").concat(handbookWeekRiding.points, " 포인트");
+                    result.points.push(handbookWeekRiding);
+                }
+                if (this.days > 0) {
+                    result.points.push(newline);
+                    var handbookDayDiamond = new Points("모험 수첩 일일 임무 스타다이아", 100 * this.days);
+                    handbookDayDiamond.cost = -100 * this.days;
+                    handbookDayDiamond.explain = "모험 수첩 매일 임무 스타다이아 100 별 * ".concat(this.days, "일, 총 획득 ").concat(-handbookDayDiamond.cost, " 별");
+                    result.points.push(handbookDayDiamond);
+                    var handbookDaySkillCard = new Points("모험 수첩 일일 임무 스킬 추첨", 1 * this.days);
+                    handbookDaySkillCard.points = SkillCard.points * handbookDaySkillCard.quantity;
+                    handbookDaySkillCard.explain = "모험 수첩 매일 임무 스킬 추첨 1장 * ".concat(this.days, "일, 총 ").concat(handbookDaySkillCard.quantity, "장, ").concat(handbookDaySkillCard.points, " 포인트");
+                    result.points.push(handbookDaySkillCard);
+                    var handbookDayEnergyCrystal = new Points("모험 수첩 일일 임무 에너지 크리스탈", 3 * this.days);
+                    handbookDayEnergyCrystal.points = ProductEnergyCrystal.points * handbookDayEnergyCrystal.quantity;
+                    handbookDayEnergyCrystal.explain = "모험 수첩 매일 임무 에너지 크리스탈 3개 * ".concat(this.days, "일, 총 ").concat(handbookDayEnergyCrystal.quantity, "개, ").concat(handbookDayEnergyCrystal.points, " 포인트");
+                    result.points.push(handbookDayEnergyCrystal);
+                    var handbookDayRiding = new Points("모험 수첩 일일 임무 탈것 티켓", 5 * this.days);
+                    handbookDayRiding.points = ProductRiding.points * handbookDayRiding.quantity;
+                    handbookDayRiding.explain = "모험 수첩 매일 임무 탈것 티켓 5장 * ".concat(this.days, "일, 총 ").concat(handbookDayRiding.quantity, "장, ").concat(handbookDayRiding.points, " 포인트");
+                    result.points.push(handbookDayRiding);
+                    // 드래곤
+                    result.points.push(newline);
+                    var dragonTips = new Points("일일 드래곤 임무 팁", 0);
+                    dragonTips.explain = "일일 드래곤 임무는 최소 보장 기준으로 계산되며, 일괄 추가 후 자동으로 포인트를 획득할 수 있습니다.";
+                    result.points.push(dragonTips);
+                    var dragonDiamond = new Points("일일 드래곤 임무 스타다이아", 50 * this.days);
+                    dragonDiamond.cost = -50 * this.days;
+                    dragonDiamond.explain = "매일 드래곤 임무 50 별 * ".concat(this.days, "일, 총 획득 ").concat(-dragonDiamond.cost, " 별");
+                    result.points.push(dragonDiamond);
+                    var dragonSkillCard = new Points("일일 드래곤 임무 스킬 추첨", 1 * this.days);
+                    dragonSkillCard.points = SkillCard.points * dragonSkillCard.quantity;
+                    dragonSkillCard.explain = "매일 드래곤 임무 스킬 추첨 1장 * ".concat(this.days, "일, 총 ").concat(dragonSkillCard.quantity, "장, ").concat(dragonSkillCard.points, " 포인트");
+                    result.points.push(dragonSkillCard);
+                    result.points.push(newline);
+                    if (this.subscriptionCard !== 0) {
+                        var subscriptionCardPoints = new Points("월간 카드", 1);
+                        subscriptionCardPoints.cost = -this.subscriptionCard * this.days;
+                        subscriptionCardPoints.explain = "월간 카드 매일 ".concat(this.subscriptionCard, " 별 * ").concat(this.days, "일, 총 획득 ").concat(-subscriptionCardPoints.cost, " 별");
+                        result.points.push(subscriptionCardPoints);
+                    }
+                    var freeDiamond = new Points("패키지 페이지 무료 스타다이아", 0);
+                    freeDiamond.cost = -50 * this.days;
+                    freeDiamond.explain = "패키지 페이지 매일 무료 50 별 * ".concat(this.days, "일, 총 획득 ").concat(-freeDiamond.cost, " 별");
+                    result.points.push(freeDiamond);
+                }
+                // 포인트가 부족하면 남은 스타다이아를 포인트로 환산
+                // 여기서는 단순히 자리 표시자로, 실제로는 "종이비행기 포인트 보상 선물"의 while 루프에서 동적으로 계산해야 함
+                var diamondPoints = new Points("남은 스타다이아", 0);
+                result.points.push(diamondPoints);
+                levelPoints.sort(function (a, b) { return a.pointLevel - b.pointLevel; });
+                var finalLevelPoints = [];
+                for (var i = 0; i < 3; i++) {
+                    for (var j = 0; j < levelPoints.length; j++) {
+                        var item = levelPoints[j];
+                        finalLevelPoints.push(new LevelGiftPoints(item.pointLevel + i * 3000, item.points));
+                    }
+                }
+                var points = this.currentPoints;
+                var taskPoints = new Points("종이비행기 포인트 보상 선물");
+                result.points.push(taskPoints);
+                while (true) {
+                    var preIdx = finalLevelPoints.findIndex(function (item) { return item.pointLevel >= points; });
+                    if (preIdx == -1) {
+                        break;
+                    }
+                    var curIdx = finalLevelPoints.findIndex(function (item) { return item.pointLevel >= result.totalPoints().points; });
+                    if (curIdx == -1) {
+                        curIdx = finalLevelPoints.length;
+                    }
+                    if (curIdx == preIdx) {
+                        var total = result.totalPoints();
+                        points = total.points;
+                        var pointsGap = 9000 - points;
+                        if (pointsGap <= 0) {
+                            break;
+                        }
+                        // 매번 50 스타다이아를 5 포인트로 교환, 9000 포인트 또는 스타다이아가 부족할 때까지 반복
+                        var remainDiamond = this.diamond - total.cost - total.income;
+                        if (remainDiamond < 50) {
+                            break;
+                        }
+                        diamondPoints.cost += 50;
+                        diamondPoints.points += 5;
+                        continue;
+                    }
+                    // 포인트 계산
+                    for (var i = preIdx; i < curIdx; i++) {
+                        taskPoints.points += finalLevelPoints[i].points;
+                    }
+                    points = result.totalPoints().points;
+                }
+                taskPoints.explain = "종이비행기 포인트 보상 선물, 총 ".concat(taskPoints.points, " 포인트");
+                if (diamondPoints.cost > 0) {
+                    diamondPoints.explain = "스타다이아 ".concat(diamondPoints.cost, "개를 사용하여 ").concat(diamondPoints.points, " 포인트를 교환");
+                }
+                else {
+                    // result.points에서 diamondPoints 제거
+                    result.points = result.points.filter(function (item) { return item !== diamondPoints; });
+                }
+                return result;
+            };
+            return Resources;
+        }());
+        var Points = /** @class */ (function () {
+            function Points(name, quantity, points, cost) {
+                if (quantity === void 0) { quantity = 0; }
+                if (points === void 0) { points = 0; }
+                if (cost === void 0) { cost = 0; }
+                this.name = name;
+                this.quantity = quantity;
+                this.points = points;
+                this.cost = cost;
+                this.updateExplain();
+            }
+            Points.prototype.updateExplain = function () {
+                var s = "".concat(this.name, " * ").concat(this.quantity, " ");
+                if (this.points !== 0) {
+                    s += " 총 ".concat(this.points, " 포인트");
+                }
+                if (this.cost > 0) {
+                    s += ", 비용 ".concat(this.cost, " 별");
+                }
+                else if (this.cost < 0) {
+                    s += ", 획득 ".concat(-this.cost, " 별");
+                }
+                this.explain = s;
+            };
+            return Points;
+        }());
+        var Result = /** @class */ (function () {
+            function Result() {
+                this.points = [];
+            }
+            Result.prototype.totalPoints = function () {
+                var total = new TotalResult();
+                this.points.forEach(function (p) {
+                    total.points += p.points;
+                    if (p.cost > 0) {
+                        total.cost += p.cost;
+                    }
+                    else {
+                        total.income += p.cost;
+                    }
+                });
+                return total;
+            };
+            return Result;
+        }());
+        var TotalResult = /** @class */ (function () {
+            function TotalResult() {
+                this.points = 0;
+                this.cost = 0;
+                this.income = 0;
+            }
+            return TotalResult;
+        }());
+        var GradePoints = /** @class */ (function () {
+            function GradePoints(name, points, img_num) {
+                if (img_num === void 0) { img_num = 0; }
+                this.name = name;
+                this.points = points;
+                this.img_num = img_num;
+            }
+            return GradePoints;
+        }());
+        var PresetGradePoints = [
+            new GradePoints("1기, 스킬 선택", [30, 30, 50, 50, 70, 100, 100], 6),
+            new GradePoints("2기, 풍막 보충 (에너지 획득 확률 배수)", [30, 30, 0, 60, 0, 90, 0], 12),
+            new GradePoints("3기, 펫 퍼즐 선택", [20, 30, 0, 50, 0, 100, 0], 6),
+            new GradePoints("4기, 스킬 선택", [30, 30, 50, 50, 70, 100, 100], 6),
+            new GradePoints("5기, 암흑의 시야 (룬 획득 확률 배수)", [30, 30, 0, 60, 0, 90, 0], 12),
+            new GradePoints("6기, 펫 퍼즐 선택", [20, 30, 0, 50, 0, 100, 0], 7),
+            new GradePoints("7기, 금탈것 포인트 선택", [10, 10, 14, 14, 14, 20, 20], 6),
+            new GradePoints("8기, 고양이, 스킬 선택", [30, 30, 50, 50, 70, 100, 100], 6),
+            new GradePoints("9기, 유루 루웅 (고양이 과일 나무 획득 확률 배수), 비밀 보물 선택", [30, 30, 45, 60, 0, 90, 0], 6),
+            new GradePoints("10기, 펫 퍼즐 선택", [20, 30, 0, 50, 0, 100, 0], 2),
+            new GradePoints("11기, 감상 금장, 탈것 선택", [10, 10, 14, 14, 14, 20, 20], 3),
+            new GradePoints("12기, 침식 독창 (탈것 티켓 획득 확률 배수)", [30, 30, 45, 60, 0, 90, 0], 4),
+            new GradePoints("13기, 스킬 선택", [30, 30, 50, 50, 70, 100, 100], 2),
+            new GradePoints("14기, 유루 루웅 (고양이 과일 나무 획득 확률 배수), 비밀 보물 선택", [30, 30, 45, 60, 0, 90, 0], 4),
+            new GradePoints("15기, 펫 퍼즐 선택", [20, 30, 0, 50, 0, 100, 0], 2),
+            new GradePoints("16기, 감상 금장, 고양이 선택", [0, 0, 0, 0, 0, 0, 0], 2),
+        ];
+        function generateGradePointsSelectOptions(gps) {
+            var options = '';
+            var now = new Date();
+            var firstDay = new Date('2024-05-15');
+            var current = Math.floor((now.getTime() - firstDay.getTime()) / (1000 * 60 * 60 * 24) / 7 - 1);
+            for (var i = 0; i < gps.length; i++) {
+                var gp = gps[i];
+                if (i === current) {
+                    options += "<option value=\"".concat(i, "\" selected>").concat(gp.name, "</option>");
+                }
+                else {
+                    options += "<option value=\"".concat(i, "\">").concat(gp.name, "</option>");
+                }
+            }
+            return options;
+        }
+        function fillGradePoints() {
+            var gpIdx = parseInt(document.getElementById("gradePoints").value);
+            var gp = PresetGradePoints[gpIdx];
+            var ids = ["p100", "p300", "p600", "p1000", "p1500", "p2200", "p3000"];
+            for (var i = 0; i < ids.length; i++) {
+                var id = ids[i];
+                document.getElementById(id).value = String(gp.points[i]);
+            }
+            // 종이비행기 상세 이미지 표시
+            if (gp.img_num === 0) {
+                document.getElementById("gradePointsDetail").style.display = "none";
+                return;
+            }
+            document.getElementById("gradePointsDetail").style.display = "block";
+            document.getElementById("gradePointsDetailTitle").innerText = "종이비행기 상세";
+            var desc = gp.name;
+            if (gp.name.startsWith("?")) {
+                desc = "".concat(gp.name.substring(1), "(예측 데이터, 실제는 정확히 입력해주세요)");
+            }
+            var contentHtml = "<div class=\"block\">".concat(desc, "</div>");
+            for (var i = 0; i < gp.img_num; i++) {
+                contentHtml += "<div class=\"block\"><img class=\"image max-width-img\" src=\"images/detail_".concat(gpIdx + 1, "_").concat(i + 1, ".webp\"></div>");
+            }
+            document.getElementById("gradePointsDetailContent").innerHTML = contentHtml;
+        }
+        function toggleCard(id) {
+            var card = document.getElementById(id);
+            card.getElementsByClassName("card-content")[0].classList.toggle("collapsed");
+            var icon = card.getElementsByClassName("fas")[0];
+            icon.classList.toggle("fa-angle-up");
+            icon.classList.toggle("fa-angle-down");
+        }
+        function expendCard(id) {
+            var card = document.getElementById(id);
+            card.getElementsByClassName("card-content")[0].classList.remove("collapsed");
+            var icon = card.getElementsByClassName("fas")[0];
+            icon.classList.remove("fa-angle-down");
+            icon.classList.add("fa-angle-up");
+        }
+        function points_animation(id, points) {
+            var el = document.getElementById(id);
+            var max = 9000;
+            el.setAttribute("max", max.toString());
+            el.classList.remove("is-success", "is-info", "is-warning", "is-danger");
+            if (points >= 9000) {
+                el.classList.add("is-success");
+            }
+            else if (points >= 8200) {
+                el.classList.add("is-info");
+            }
+            else if (points >= 6000) {
+                el.classList.add("is-warning");
+            }
+            else {
+                el.classList.add("is-danger");
+            }
+            var step = Math.floor(points / 50);
+            if (step == 0) {
+                el.innerText = "".concat(points.toString(), " / ").concat(max.toString());
+                el.setAttribute("value", points.toString());
+                return;
+            }
+            var currentPoints = 0;
+            var interval = setInterval(function () {
+                currentPoints += step;
+                if (currentPoints >= points) {
+                    currentPoints = points;
+                    clearInterval(interval);
+                }
+                el.innerText = "".concat(currentPoints.toString(), " / ").concat(max.toString());
+                el.setAttribute("value", currentPoints.toString());
+            }, 10);
+        }
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById("gradePoints").addEventListener("change", fillGradePoints);
+
+            document.getElementById("energyPurchaseTimes").innerHTML = ProductEnergy.generateSelectOptions(4);
+            document.getElementById("ridingPurchaseTimes").innerHTML = ProductRiding.generateSelectOptions(4);
+            document.getElementById("runePurchaseTimes").innerHTML = ProductRune.generateSelectOptions(4);
+            document.getElementById("water").innerHTML = ProductWater.generateSelectOptions(2);
+            document.getElementById("cat").innerHTML = ProductCat.generateSelectOptions(0);
+            document.getElementById("instance").innerHTML = ProductInstance.generateSelectOptions(3);
+            document.getElementById("gradePoints").innerHTML = generateGradePointsSelectOptions(PresetGradePoints);
+            fillGradePoints();
+        });
+    </script>
+    <script>
+        function calculatePoints() {
+            expendCard("points_result");
+
+            const diamond = parseInt(document.getElementById('diamond').value);
+            const days = parseInt(document.getElementById('days').value);
+            const pet = parseInt(document.getElementById('pet').value);
+            const skill = parseInt(document.getElementById('skill').value);
+            const rune = parseInt(document.getElementById('rune').value);
+            const runePurchaseTimes = parseInt(document.getElementById('runePurchaseTimes').value);
+            const energyCrystal = parseInt(document.getElementById('energyCrystal').value);
+            const energy = parseInt(document.getElementById('energy').value);
+            const energyPurchaseTimes = parseInt(document.getElementById('energyPurchaseTimes').value);
+            const riding = parseInt(document.getElementById('riding').value);
+            const ridingPurchaseTimes = parseInt(document.getElementById('ridingPurchaseTimes').value);
+            const pack1 = document.getElementById('pack1').checked ? 1 : 0;
+            const pack2 = document.getElementById('pack2').checked ? 1 : 0;
+            const currentPoints = parseInt(document.getElementById("pcurrent").value);
+            const dailyCost = parseInt(document.getElementById("dailyCost").value);
+            const subscriptionCard = document.getElementById('subscriptionCard').checked ? 1 : 0;
+            const water = parseInt(document.getElementById('water').value);
+            const cat = parseInt(document.getElementById('cat').value);
+            const instance = parseInt(document.getElementById('instance').value);
+            const nightmareDiamond = parseInt(document.getElementById('nightmareDiamond').value);
+
+            const levelPoints = [
+                {pointLevel: 100, points: parseInt(document.getElementById("p100").value)},
+                {pointLevel: 300, points: parseInt(document.getElementById("p300").value)},
+                {pointLevel: 600, points: parseInt(document.getElementById("p600").value)},
+                {pointLevel: 1000, points: parseInt(document.getElementById("p1000").value)},
+                {pointLevel: 1500, points: parseInt(document.getElementById("p1500").value)},
+                {pointLevel: 2200, points: parseInt(document.getElementById("p2200").value)},
+                {pointLevel: 3000, points: parseInt(document.getElementById("p3000").value)},
+            ];
+
+            let resource = new Resources(days, currentPoints, diamond, dailyCost, energy, energyPurchaseTimes , energyCrystal, rune, runePurchaseTimes, riding, ridingPurchaseTimes , skill, pet, pack1, pack2, subscriptionCard, water, cat, instance, nightmareDiamond);
+
+            const result = resource.calculate(levelPoints);
+            if (result.totalPoints().points === 0) {
+                let explain = result.points.map(p => p.explain).join('<br>');
+                document.getElementById('pointsResult').innerHTML = `<p style="color: red">${explain}</p>`;
+            } else {
+                points_animation('points_process', result.totalPoints().points);
+                let explain = result.points.map(p => p.explain).join('\n');
+                document.getElementById('pointsResult').innerText = explain;
+                let total = result.totalPoints();
+                document.getElementById('all_points').innerText = "총 포인트: " + total.points;
+                let cost = "총 지출: " + total.cost + " 별\n";
+                if (total.income !== 0) {
+                    cost += "총 획득: " + -total.income + " 별\n";
+                }
+                let remainDiamond = diamond - total.cost - total.income;
+                if (remainDiamond < 0) {
+                    cost += "부족: " + (-remainDiamond) + " 별\n";
+                } else {
+                    cost += "남은 스타다이아: " + remainDiamond + " 별\n";
+                }
+                document.getElementById('cost_result').innerText = cost;
+            }
+        }
+    </script>
+</head>
+<body>
+<div class="container">
+    <section class="hero is-link">
+        <div class="hero-body">
+            <h1 class="title">종이비행기 포인트 계산기</h1>
+        </div>
+    </section>
+
+    <div class="block"></div>
+
+    <article class="message is-info">
+        <div class="message-header">
+            <p>
+            <span class="icon">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </span>
+                <span>주의사항</span>
+            </p>
+        </div>
+        <div class="message-body">
+            최종 계산된 포인트는 당신이 <strong class="keypoint">최소한</strong> 획득할 수 있는 포인트입니다.<br>메인 스토리, 업적, 한정 이벤트 등의 보상으로 추가 포인트가 발생할 수 있으므로 <strong class="keypoint">실제 포인트는 더 많을 수 있습니다</strong>.<br>
+            궁금한 점이나 제안 사항이 있으시면 그냥 참으세요
+        </div>
+    </article>
+
+<div class="card" id="fixed_resources">
+    <header class="card-header">
+        <p class="card-header-title">고정 자원</p>
+        <button class="card-header-icon" aria-label="more options" onclick="toggleCard('fixed_resources')">
+          <span class="icon">
+            <i class="fas fa-angle-up" aria-hidden="true"></i>
+          </span>
+        </button>
+    </header>
+
+    <div class="card-content">
+        <div class="content">
+            <nav class="level">
+                <div class="level-left">
+                    <label class="level-item" style="width:10em" for="pet">몬스터 소환 현악기:</label>
+                    <div class="level-item">
+                        <input type="number" class="input" style="width: 10em" value="0" id="pet" name="pet" required="">
+                    </div>
+                </div>
+            </nav>
+
+            <div class="level">
+                <div class="level-left">
+                    <label class="level-item" style="width:10em" for="skill">스킬 카드:</label>
+                    <div class="level-item">
+                        <input type="number" class="input" style="width: 10em" value="0" id="skill" name="skill" required=""><br><br>
+                    </div>
+                </div>
+            </div>
+
+
+                <nav class="level">
+                    <div class="level-left">
+                        <label class="level-item" style="width:10em" for="energyCrystal">에너지 충전 크리스탈:</label>
+                        <div class="level-item">
+                            <input class="input" style="width: 10em" type="number" value="0" id="energyCrystal" name="energyCrystal" required=""><br><br>
+                        </div>
+                    </div>
+                </nav>
+
+            <hr>
+
+            <div class="block">다음 구매 할인은 원가 1포인트당 10 스타다이아로 계산됩니다. 모두 4회 구매를 권장합니다.</div>
+
+            <nav class="level">
+                <div class="level-left">
+                    <label class="level-item" style="width:10em" for="rune">룬 문자:</label>
+                    <div class="control level-item">
+                        <input class="input" style="width: 10em" type="number" value="0" id="rune" name="rune" required="">
+                    </div>
+                    <label class="level-item" for="runePurchaseTimes">일일 구매 횟수:</label>
+                    <div class="control level-item">
+                        <div class="select">
+                            <select id="runePurchaseTimes" name="runePurchaseTimes" required="">
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <nav class="level">
+                <div class="level-left">
+                    <label class="level-item" style="width:10em">
+                        <div class="tooltip">미수령 보물 에너지:
+                            <span class="tooltiptext">이메일, 업적 등에서 수령하지 않은 에너지</span>
+                        </div>
+                    </label>
+                    <div class="control level-item">
+                        <input class="input" style="width: 10em" type="number" value="0" id="energy" name="energy" required="">
+                    </div>
+                    <label class="level-item" for="energyPurchaseTimes">일일 구매 횟수:</label>
+                    <div class="control level-item">
+                        <div class="select">
+                            <select class="" id="energyPurchaseTimes" name="energyPurchaseTimes" required="">
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <nav class="level">
+                <div class="level-left">
+                    <label class="level-item" style="width:10em" for="riding">탈것 티켓:</label>
+                    <div class="control level-item">
+                        <input class="input" style="width: 10em" type="number" value="0" id="riding" name="riding" required="">
+                    </div>
+                    <label class="level-item" for="ridingPurchaseTimes">일일 구매 횟수:</label>
+                    <div class="control level-item">
+                        <div class="select">
+                            <select class="" id="ridingPurchaseTimes" name="ridingPurchaseTimes" required="">
+                                <option value="0">구매하지 않음</option>
+                                <option value="1">1회차, 30 스타다이아, 30% 할인</option>
+                                <option value="2">2회차, 30 스타다이아, 30% 할인</option>
+                                <option value="3">3회차, 50 스타다이아, 50% 할인</option>
+                                <option value="4" selected="">4회차, 80 스타다이아, 80% 할인</option>
+                                <option value="5">5회차, 120 스타다이아, 120% 가격</option>
+                                <option value="6">6회차, 150 스타다이아, 150% 가격</option>
+                                <option value="7">7회차, 200 스타다이아, 200% 가격</option>
+                                <option value="8">8회차, 250 스타다이아, 250% 가격</option>
+                                <option value="9">9회차, 300 스타다이아, 300% 가격</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="card" id="cost_card">
+    <header class="card-header">
+        <p class="card-header-title">스타다이아 수입과 지출</p>
+        <button class="card-header-icon" aria-label="more options" onclick="toggleCard('cost_card')">
+          <span class="icon">
+            <i class="fas fa-angle-up" aria-hidden="true"></i>
+          </span>
+        </button>
+    </header>
+
+    <div class="card-content">
+        <div class="content">
+            <nav class="level">
+                <div class="level-left">
+                    <label class="level-item" for="diamond">보유 스타다이아:</label>
+                    <div class="control level-item">
+                        <input class="input" style="width: 10em" type="number" id="diamond" name="diamond" value="0" required="">
+                    </div>
+                    <div class="control level-item">
+                        <input type="checkbox" id="subscriptionCard" name="subscriptionCard" value="0" required="">
+                    </div>
+                    <label for="subscriptionCard">월간 카드 보유</label>
+                </div>
+            </nav>
+
+            <nav class="level">
+                <div class="level-left">
+                    <label class="level-item">
+                        <div class="tooltip">
+                            주간 악몽 격류 임무 스타다이아 보상:
+                            <span class="tooltiptext">300은 보수적인 수치이며, 실제 상황에 맞게 입력하세요.</span>
+                        </div>
+                    </label>
+                    <div class="control level-item">
+                        <input class="input" style="width: 10em" type="number" id="nightmareDiamond" name="nightmareDiamond" value="300" required=""><br>
+                    </div>
+                </div>
+            </nav>
+
+            <nav class="level">
+                <div class="level-left">
+                    <label class="level-item" for="water">매일 길드 물 주기 횟수(포인트 없음):</label>
+                    <div class="control level-item select">
+                        <select id="water" name="water" required="">
+                            <option value="0">구매하지 않음</option>
+                            <option value="1">1회차, 무료</option>
+                            <option value="2" selected="">2회차, 20 스타다이아</option>
+                            <option value="3">3회차, 50 스타다이아</option>
+                            <option value="4">4회차, 100 스타다이아</option>
+                            <option value="5">5회차, 100 스타다이아</option>
+                        </select><br><br>
+                    </div>
+                </div>
+            </nav>
+
+            <nav class="level">
+                <div class="level-left">
+                    <label class="level-item" for="instance">매일 비밀 던전/인스턴스 체력 구매 횟수(포인트 없음):</label>
+                    <div class="control level-item select">
+                        <select id="instance" name="instance" required="">
+                            <option value="0">구매하지 않음</option>
+                            <option value="1">1회차, 20 스타다이아</option>
+                            <option value="2">2회차, 20 스타다이아</option>
+                            <option value="3" selected="">3회차, 20 스타다이아</option>
+                        </select>
+                    </div>
+                </div>
+            </nav>
+
+            <nav class="level">
+                <div class="level-left">
+                    <label class="level-item" for="cat">냥이빵 장작 구매 횟수(2차 전환 후 활성화, 포인트 없음):</label>
+                    <div class="control level-item select">
+                        <select id="cat" name="cat" required="">
+                            <option value="0">구매하지 않음</option>
+                            <option value="1">1회차, 30 스타다이아</option>
+                            <option value="2">2회차, 50 스타다이아</option>
+                            <option value="3">3회차, 80 스타다이아</option>
+                            <option value="4">4회차, 120 스타다이아</option>
+                            <option value="5">5회차, 150 스타다이아</option>
+                            <option value="6">6회차, 200 스타다이아</option>
+                            <option value="7">7회차, 250 스타다이아</option>
+                            <option value="8">8회차, 300 스타다이아</option>
+                            <option value="9">9회차, 300 스타다이아</option>
+                        </select>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="content">
+                <p>
+                    <span>햄스터 백화점 할인 간식과 돌파석 190 스타다이아</span><br>
+                    <span>일일 스타다이아 지출은 실제 상황에 맞게 조정하세요.</span>
+                </p>
+                <nav class="level">
+                    <div class="level-left">
+                        <label class="level-item" for="dailyCost">햄스터 백화점 지출:</label>
+                        <div class="control level-item">
+                            <input class="input" style="width: 10em" type="number" id="dailyCost" name="dailyCost" required="" value="190"><br><br>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+
+            <div class="content">
+                <label class="checkbox" for="pack1">
+                    <input type="checkbox" id="pack1" name="pack1" value="1" checked="" required="">
+                    선택 패키지 1 구매 (1000 스타다이아, 150 포인트, 67% 할인)
+                </label>
+                <br>
+                <label class="checkbox" for="pack2">
+                    <input type="checkbox" id="pack2" name="pack2" value="1" checked="" required="">
+                    선택 패키지 2 구매 (1800 스타다이아, 225 포인트, 80% 할인)
+                </label>
+                <p>이번 기간의 패키지를 아직 구매하지 않았다면, 구매 후 자원으로 환산하고 다시 계산하세요.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card" id="grade_points_card">
+    <header class="card-header">
+        <p class="card-header-title">종이비행기 포인트 보상</p>
+        <button class="card-header-icon" aria-label="more options" onclick="toggleCard('grade_points_card')">
+          <span class="icon">
+            <i class="fas fa-angle-up" aria-hidden="true"></i>
+          </span>
+        </button>
+    </header>
+    <div class="card-content">
+        <div class="content">
+            <p>
+                <span>종이비행기는 일정 포인트에 도달할 때마다 보상을 받을 수 있으며, 이 보상 자체도 포인트를 생성합니다.</span><br>
+                <span>아래의 원클릭 입력 기능을 사용하거나,
+                    <span class="tooltip">
+                        직접 보상 포인트를 환산하고,
+                        <span class="tooltiptext">
+                            포인트 환산 규칙:<br>
+                            스킬 추첨 × 10<br>
+                            펫 추첨 × 15<br>
+                            룬 텍스트 × 0.1<br>
+                            비밀 보물 에너지 × 0.3<br>
+                            탈것 티켓 × 2<br>
+                        </span>
+                    </span>
+                    결과를 아래 표에 입력하세요.
+                </span><br>
+                <span>이렇게 하면 최종 포인트를 더욱 정확하게 계산할 수 있습니다.</span>
+            </p>
+            <div class="box">
+                <p>
+                    </p><div class="level">
+                        <div class="level-left">
+                            <label class="level-item" style="width: 15em;" for="p100">100 포인트 해당 보상 포인트:</label>
+                            <div class="level-item">
+                                <input class="input" style="width: 10em" type="number" id="p100" name="p100" value="0" required=""><br>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="level">
+                        <div class="level-left">
+                            <label class="level-item" style="width: 15em" for="p300">300 포인트 해당 보상 포인트:</label>
+                            <div class="level-item">
+                                <input class="input" style="width: 10em" type="number" id="p300" name="p300" value="0" required=""><br>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="level">
+                        <div class="level-left">
+                            <label class="level-item" style="width: 15em" for="p600">600 포인트 해당 보상 포인트:</label>
+                            <div class="level-item">
+                                <input class="input" style="width: 10em" type="number" id="p600" name="p600" value="0" required=""><br>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="level">
+                        <div class="level-left">
+                            <label class="level-item" style="width: 15em" for="p1000">1000 포인트 해당 보상 포인트:</label>
+                            <div class="level-item">
+                                <input class="input" style="width: 10em" type="number" id="p1000" name="p1000" value="0" required=""><br>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="level">
+                        <div class="level-left">
+                            <label class="level-item" style="width: 15em" for="p1500">1500 포인트 해당 보상 포인트:</label>
+                            <div class="level-item">
+                                <input class="input" style="width: 10em" type="number" id="p1500" name="p1500" value="0" required=""><br>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="level">
+                        <div class="level-left">
+                            <label class="level-item" style="width: 15em" for="p2200">2200 포인트 해당 보상 포인트:</label>
+                            <div class="level-item">
+                                <input class="input" style="width: 10em" type="number" id="p2200" name="p2200" value="0" required=""><br>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="level">
+                        <div class="level-left">
+                            <label class="level-item" style="width: 15em" for="p3000">3000 포인트 해당 보상 포인트:</label>
+                            <div class="level-item">
+                                <input class="input" style="width: 10em" type="number" id="p3000" name="p3000" value="0" required=""><br>
+                            </div>
+                        </div>
+                    </div>
+                <p></p>
+
+                <nav class="level">
+                    <div class="level-left">
+                        <span class="level-item">👆원클릭 입력</span>
+                        <div class="select level-item"><select id="gradePoints" name="gradePoints" required=""><option value="0">1기, 스킬 선택</option><option value="1">2기, 풍막 보충 (에너지 획득 확률 배수)</option><option value="2">3기, 펫 퍼즐 선택</option><option value="3">4기, 스킬 선택</option><option value="4">5기, 암흑의 시야 (룬 획득 확률 배수)</option><option value="5">6기, 펫 퍼즐 선택</option><option value="6">7기, 금탈것 포인트 선택</option><option value="7">8기, 고양이, 스킬 선택</option><option value="8">9기, 유루 루웅 (고양이 과일 나무 획득 확률 배수), 비밀 보물 선택</option><option value="9">10기, 펫 퍼즐 선택</option><option value="10">11기, 감상 금장, 탈것 선택</option><option value="11">12기, 침식 독창 (탈것 티켓 획득 확률 배수)</option><option value="12">13기, 스킬 선택</option><option value="13">14기, 유루 루웅 (고양이 과일 나무 획득 확률 배수), 비밀 보물 선택</option><option value="14">15기, 펫 퍼즐 선택</option><option value="15">16기, 감상 금장, 고양이 선택</option></select> </div>
+                        <span class="level-left">보상 포인트</span>
+                    </div>
+                </nav>
+            </div>
+
+            <div class="level">
+                <div class="level-left">
+                    <label class="level-item" for="pcurrent">현재 포인트( 매 라운드 완료 시 3000 추가하세요 ):</label>
+                    <div class="level-item">
+                        <input class="input" style="width: 10em" type="number" id="pcurrent" name="pcurrent" value="0" required="">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="level">
+    <div class="level-left">
+        <label class="level-item">
+            <span class="tooltip">
+                종료까지 남은 일수:
+                <span class="tooltiptext">
+                    예: 현재 1기 종이비행기의 3일째인 경우.<br>
+                    1기를 계산하려면 4를 입력하세요.<br>
+                    2기를 계산하려면 11을 입력하세요.<br>
+                </span>
+            </span>
+        </label>
+        <div class="level-item">
+            <input class="input" type="number" id="days" name="days" value="7" required="">
+        </div>
+        <div class="level-item">
+            <button type="button" class="button" onclick="calculatePoints()">
+                <span class="icon"> <i class="fas fa-calculator"></i></span>
+                <span>포인트 계산</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="card" id="points_result">
+    <header class="card-header">
+        <p class="card-header-title">포인트 계산 결과</p>
+        <button class="card-header-icon" aria-label="more options" onclick="toggleCard('points_result')">
+          <span class="icon">
+            <i class="fas fa-angle-down" aria-hidden="true"></i>
+          </span>
+        </button>
+    </header>
+
+    <div class="card-content collapsed">
+        <div class="content">
+            <div class="content">
+                <div class="content">
+                    <progress class="progress" id="points_process"></progress>
+                    <span id="all_points" style="font-weight: bold;"></span><br>
+                    <span id="cost_result" style="font-weight: bold;"></span><br>
+                </div>
+
+                <div class="card" id="points_detail">
+                    <header class="card-header">
+                        <p class="card-header-title">포인트 상세</p>
+                        <button class="card-header-icon" aria-label="more options" onclick="toggleCard('points_detail')">
+                          <span class="icon">
+                            <i class="fas fa-angle-up" aria-hidden="true"></i>
+                          </span>
+                        </button>
+                    </header>
+                    <div class="card-content">
+                        <div class="content">
+                            <span id="pointsResult"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+</div></body></html>
