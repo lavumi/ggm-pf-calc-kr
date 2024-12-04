@@ -71,9 +71,7 @@
             max-width: 400px; 
         }
     </style>
-    <link rel="stylesheet" href="./files/all.min.css">
     <link rel="stylesheet" href="./files/bulma.min.css">
-    <script src="./files/hm.js.download"></script>
     <script>
         var Product = /** @class */ (function () {
             function Product(name, points, dailyQuantity, purchase) {
@@ -560,6 +558,7 @@
             }
             return GradePoints;
         }());
+
         var PresetGradePoints = [
             new GradePoints("1기, 스킬 선택", [30, 30, 50, 50, 70, 100, 100], 6),
             new GradePoints("2기, 풍막 보충 (에너지 획득 확률 배수)", [30, 30, 0, 60, 0, 90, 0], 12),
@@ -577,6 +576,16 @@
             new GradePoints("14기, 유루 루웅 (고양이 과일 나무 획득 확률 배수), 비밀 보물 선택", [30, 30, 45, 60, 0, 90, 0], 4),
             new GradePoints("15기, 펫 퍼즐 선택", [20, 30, 0, 50, 0, 100, 0], 2),
             new GradePoints("16기, 감상 금장, 고양이 선택", [0, 0, 0, 0, 0, 0, 0], 2),
+            new GradePoints("17기, 고급 라이드 선택 포인트", [10, 10, 14, 14, 14, 20, 20], 3),
+            new GradePoints("18기, 침식 독창 (탈것 티켓 획득 확률 배수)", [30, 30, 50, 50, 70, 100, 100], 3),
+            new GradePoints("19기, 펫 퍼즐 선택", [20, 30, 0, 50, 0, 100, 0], 3),
+            new GradePoints("20기, 감상 금장, 고양이 선택", [0, 0, 0, 0, 0, 0, 0], 3),
+            new GradePoints("21기, 귀혼의 길 (정제시 소모량 감소), 배수 보물 선택", [10, 10, 14, 14, 14, 20, 20], 3),
+            new GradePoints("22기, 스킬 선택", [30, 30, 50, 50, 70, 100, 100], 3),
+            new GradePoints("23기, 위미르 만가 (절경 데미지 증가), 배수 보물 선택", [10, 10, 14, 14, 14, 20, 20], 3),
+            new GradePoints("24기, 2차 펫 퍼즐 선택", [15, 15, 30, 45, 45, 75, 75], 3),
+            new GradePoints("25기, 펫 퍼즐 선택", [20, 30, 0, 50, 0, 100, 0], 3),
+            new GradePoints("26기, 감상 금장, 고양이 선택", [0, 0, 0, 0, 0, 0, 0], 3),
         ];
         function generateGradePointsSelectOptions(gps) {
             var options = '';
@@ -602,22 +611,6 @@
                 var id = ids[i];
                 document.getElementById(id).value = String(gp.points[i]);
             }
-            // 종이비행기 상세 이미지 표시
-            if (gp.img_num === 0) {
-                document.getElementById("gradePointsDetail").style.display = "none";
-                return;
-            }
-            document.getElementById("gradePointsDetail").style.display = "block";
-            document.getElementById("gradePointsDetailTitle").innerText = "종이비행기 상세";
-            var desc = gp.name;
-            if (gp.name.startsWith("?")) {
-                desc = "".concat(gp.name.substring(1), "(예측 데이터, 실제는 정확히 입력해주세요)");
-            }
-            var contentHtml = "<div class=\"block\">".concat(desc, "</div>");
-            for (var i = 0; i < gp.img_num; i++) {
-                contentHtml += "<div class=\"block\"><img class=\"image max-width-img\" src=\"images/detail_".concat(gpIdx + 1, "_").concat(i + 1, ".webp\"></div>");
-            }
-            document.getElementById("gradePointsDetailContent").innerHTML = contentHtml;
         }
         function toggleCard(id) {
             var card = document.getElementById(id);
@@ -671,7 +664,6 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById("gradePoints").addEventListener("change", fillGradePoints);
-
             document.getElementById("energyPurchaseTimes").innerHTML = ProductEnergy.generateSelectOptions(4);
             document.getElementById("ridingPurchaseTimes").innerHTML = ProductRiding.generateSelectOptions(4);
             document.getElementById("runePurchaseTimes").innerHTML = ProductRune.generateSelectOptions(4);
