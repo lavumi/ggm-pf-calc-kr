@@ -117,11 +117,11 @@
         var cost = this.costs[i];
         var thisCost = cost - this.costs[i - 1];
         var thisCostStr = "".concat(thisCost, " 별");
-        if (thisCost == 0) {
+        if (thisCost === 0) {
             thisCostStr = "무료";
         }
-        if (points == 0) {
-            if (i == selected) {
+        if (points === 0) {
+            if (i === selected) {
                 options += "<option value=\"".concat(i, "\" selected>").concat(i, "회, ").concat(thisCostStr, "</option>");
             }
             else {
@@ -556,42 +556,15 @@
             return TotalResult;
         }());
         var GradePoints = /** @class */ (function () {
-            function GradePoints(name, points, img_num) {
-                if (img_num === void 0) { img_num = 0; }
+            function GradePoints(name, points) {
                 this.name = name;
                 this.points = points;
-                this.img_num = img_num;
             }
             return GradePoints;
         }());
 
         var PresetGradePoints = [
-            new GradePoints("1기, 스킬 선택", [30, 30, 50, 50, 70, 100, 100], 6),
-            new GradePoints("2기, 풍막 보충 (에너지 획득 확률 배수)", [30, 30, 0, 60, 0, 90, 0], 12),
-            new GradePoints("3기, 펫 퍼즐 선택", [20, 30, 0, 50, 0, 100, 0], 6),
-            new GradePoints("4기, 스킬 선택", [30, 30, 50, 50, 70, 100, 100], 6),
-            new GradePoints("5기, 암흑의 시야 (룬 획득 확률 배수)", [30, 30, 0, 60, 0, 90, 0], 12),
-            new GradePoints("6기, 펫 퍼즐 선택", [20, 30, 0, 50, 0, 100, 0], 7),
-            new GradePoints("7기, 금탈것 포인트 선택", [10, 10, 14, 14, 14, 20, 20], 6),
-            new GradePoints("8기, 고양이, 스킬 선택", [30, 30, 50, 50, 70, 100, 100], 6),
-            new GradePoints("9기, 유루 루웅 (고양이 과일 나무 획득 확률 배수), 비밀 보물 선택", [30, 30, 45, 60, 0, 90, 0], 6),
-            new GradePoints("10기, 펫 퍼즐 선택", [20, 30, 0, 50, 0, 100, 0], 2),
-            new GradePoints("11기, 감상 금장, 탈것 선택", [10, 10, 14, 14, 14, 20, 20], 3),
-            new GradePoints("12기, 침식 독창 (탈것 티켓 획득 확률 배수)", [30, 30, 45, 60, 0, 90, 0], 4),
-            new GradePoints("13기, 스킬 선택", [30, 30, 50, 50, 70, 100, 100], 2),
-            new GradePoints("14기, 유루 루웅 (고양이 과일 나무 획득 확률 배수), 비밀 보물 선택", [30, 30, 45, 60, 0, 90, 0], 4),
-            new GradePoints("15기, 펫 퍼즐 선택", [20, 30, 0, 50, 0, 100, 0], 2),
-            new GradePoints("16기, 감상 금장, 고양이 선택", [0, 0, 0, 0, 0, 0, 0], 2),
-            new GradePoints("17기, 고급 라이드 선택 포인트", [10, 10, 14, 14, 14, 20, 20], 3),
-            new GradePoints("18기, 침식 독창 (탈것 티켓 획득 확률 배수)", [30, 30, 50, 50, 70, 100, 100], 3),
-            new GradePoints("19기, 펫 퍼즐 선택", [20, 30, 0, 50, 0, 100, 0], 3),
-            new GradePoints("20기, 감상 금장, 고양이 선택", [0, 0, 0, 0, 0, 0, 0], 3),
-            new GradePoints("21기, 귀혼의 길 (정제시 소모량 감소), 배수 보물 선택", [10, 10, 14, 14, 14, 20, 20], 3),
-            new GradePoints("22기, 스킬 선택", [30, 30, 50, 50, 70, 100, 100], 3),
-            new GradePoints("23기, 위미르 만가 (절경 데미지 증가), 배수 보물 선택", [10, 10, 14, 14, 14, 20, 20], 3),
-            new GradePoints("24기, 2차 펫 퍼즐 선택", [15, 15, 30, 45, 45, 75, 75], 3),
-            new GradePoints("25기, 펫 퍼즐 선택", [20, 30, 0, 50, 0, 100, 0], 3),
-            new GradePoints("26기, 감상 금장, 고양이 선택", [0, 0, 0, 0, 0, 0, 0], 3),
+            // new GradePoints("1기, 스킬 선택", [30, 30, 50, 50, 70, 100, 100], 6),
         ];
         function generateGradePointsSelectOptions(gps) {
             var options = '';
@@ -650,7 +623,7 @@
                 el.classList.add("is-danger");
             }
             var step = Math.floor(points / 50);
-            if (step == 0) {
+            if (step === 0) {
                 el.innerText = "".concat(points.toString(), " / ").concat(max.toString());
                 el.setAttribute("value", points.toString());
                 return;
@@ -676,9 +649,17 @@
             document.getElementById("water").innerHTML = ProductWater.generateSelectOptions(2);
             document.getElementById("cat").innerHTML = ProductCat.generateSelectOptions(0);
             document.getElementById("instance").innerHTML = ProductInstance.generateSelectOptions(3);
-            document.getElementById("gradePoints").innerHTML = generateGradePointsSelectOptions(PresetGradePoints);
-            fillGradePoints();
         });
+
+        fetch('gradePoints.json')
+            .then(res => res.json())
+            .then(data => {
+                PresetGradePoints = data.map(item => new GradePoints(item.name, item.points));
+                document.getElementById("gradePoints").innerHTML = generateGradePointsSelectOptions(PresetGradePoints);
+                fillGradePoints();
+                document.getElementById("gradePoints").selectedIndex = 0;
+            })
+            .catch(err => console.error(err));
     </script>
     <script>
         function calculatePoints() {
@@ -1088,7 +1069,12 @@
                 <nav class="level">
                     <div class="level-left">
                         <span class="level-item">👆원클릭 입력</span>
-                        <div class="select level-item"><select id="gradePoints" name="gradePoints" required=""><option value="0">1기, 스킬 선택</option><option value="1">2기, 풍막 보충 (에너지 획득 확률 배수)</option><option value="2">3기, 펫 퍼즐 선택</option><option value="3">4기, 스킬 선택</option><option value="4">5기, 암흑의 시야 (룬 획득 확률 배수)</option><option value="5">6기, 펫 퍼즐 선택</option><option value="6">7기, 금탈것 포인트 선택</option><option value="7">8기, 고양이, 스킬 선택</option><option value="8">9기, 유루 루웅 (고양이 과일 나무 획득 확률 배수), 비밀 보물 선택</option><option value="9">10기, 펫 퍼즐 선택</option><option value="10">11기, 감상 금장, 탈것 선택</option><option value="11">12기, 침식 독창 (탈것 티켓 획득 확률 배수)</option><option value="12">13기, 스킬 선택</option><option value="13">14기, 유루 루웅 (고양이 과일 나무 획득 확률 배수), 비밀 보물 선택</option><option value="14">15기, 펫 퍼즐 선택</option><option value="15">16기, 감상 금장, 고양이 선택</option></select> </div>
+                        <div class="select level-item">
+                            <label for="gradePoints"></label>
+                            <select id="gradePoints" name="gradePoints" required="">
+                                <option value="0">로딩중</option>
+                                </select>
+                        </div>
                         <span class="level-left">보상 포인트</span>
                     </div>
                 </nav>
